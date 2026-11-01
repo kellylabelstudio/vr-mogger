@@ -1,0 +1,41 @@
+name: Windows beta build
+on:
+  push:
+    branches: [main, 'beta/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install installer build tool
+        shell: pwsh
+        run: |
+          $nsisPath = Join-Path ${env:ProgramFiles(x86)} 'NSIS\makensis.exe'
+          if (-not (Test-Path $nsisPath)) {
+            choco install nsis --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'NSIS installation failed.' }
+          }
+      - name: Build, test, and package
+        shell: pwsh
+        run: .\build.ps1 -Installer
+      - name: Upload beta packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: VRMogger-1.1.0-beta.1-Windows
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload test report and UI preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: VRMogger-test-report
+          path: |
+            bin/test-results.txt
+            bin/settings-preview.png
+          if-no-files-found: warn
+          retention-days: 30

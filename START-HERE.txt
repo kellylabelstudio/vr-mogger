@@ -1,0 +1,44 @@
+VR MOGGER 1.1.0-beta.1
+Kelly Label Studio x MK2XX2
+
+1. Exit any older VR Mogger from its tray menu first.
+2. Run VRMogger.exe. No administrator rights are needed.
+3. Choose the monitor, add your games, pick Mog Mode, and Save.
+
+The app changes only the selected Windows desktop monitor. It does not
+change headset resolution and does not guarantee higher VR FPS.
+
+After all selected games close, the app restores the desktop after your
+chosen delay. Leave "Restore the mode captured before gaming" checked to
+return to that session's actual starting mode. A custom restore mode is
+also available.
+
+Controls near the Windows clock:
+  Settings: change monitors, games, modes, delay, and startup preferences.
+  Restore desktop now: restore immediately; current games stay suppressed
+    until all matching games close.
+  Pause automation: restore and temporarily stop automatic switching.
+  Exit: restore the display before quitting.
+  Ctrl+Alt+F9: switch manually / restore. Manual mode holds until restored.
+
+Settings changed during a session apply to the next session.
+
+If a monitor is disconnected, reconnect it. The app never substitutes a
+different primary display for a missing saved monitor. If a driver update
+changes its identity, use Settings to select the intended monitor again.
+
+After a crash or forced exit, the next launch offers to restore the saved
+session. Display recovery data stays in %AppData%\VRMogger\recovery.ini.
+Settings stay in %AppData%\VRMogger\config.ini, including for portable use.
+
+This beta is unsigned. Windows may show an unrecognized-publisher warning.
+Check the source and SHA256SUMS.txt from the same build. A warning alone
+does not establish safety. Do not disable Windows protection.
+
+Source, feedback and updates:
+https://github.com/kellylabelstudio/vr-mogger
+
+Free beta. Optional donations will be linked only when an official
+destination is configured. No payment account is needed to use the app.
+
+MIT license: see LICENSE. Detailed documentation: README.md.
