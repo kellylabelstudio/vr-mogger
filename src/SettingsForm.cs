@@ -28,7 +28,7 @@ namespace VRMogger
             AutoScaleDimensions = new SizeF(96, 96); AutoScaleMode = AutoScaleMode.Dpi;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false; MinimizeBox = false; StartPosition = FormStartPosition.CenterScreen;
-            AutoSize = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            AutoSize = false; AutoScroll = true; ClientSize = new Size(780, 640);
             BuildUi(); RefreshMonitors();
         }
 
@@ -54,7 +54,7 @@ namespace VRMogger
 
         private void BuildUi()
         {
-            TableLayoutPanel main = Table(1); main.Width = 610; main.MinimumSize = new Size(610, 0); main.Padding = new Padding(16);
+            TableLayoutPanel main = Table(1); main.Width = 780; main.MinimumSize = new Size(740, 0); main.Padding = new Padding(16);
             main.Controls.Add(new Label { Text = "VR MOGGER", AutoSize = true, Font = new Font("Segoe UI", 17F, FontStyle.Bold), Margin = new Padding(0, 0, 0, 2) });
             main.Controls.Add(new Label { Text = "Switch your desktop display for the games you choose.", AutoSize = true, Margin = new Padding(0, 0, 0, 10) });
 
@@ -87,7 +87,11 @@ namespace VRMogger
             add.Click += delegate { AddTrigger(processInput.Text); };
             processInput.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { AddTrigger(processInput.Text); e.SuppressKeyPress = true; } };
             programs.Controls.Add(processInput, 0, 1); programs.Controls.Add(add, 1, 1);
-            main.Controls.Add(Group("Trigger programs - for example VRChat.exe or Beat Saber.exe", programs));
+            TableLayoutPanel body = Table(2); body.Padding = Padding.Empty;
+            body.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, 50F); body.ColumnStyles[1] = new ColumnStyle(SizeType.Percent, 50F);
+            GroupBox programGroup = Group("Trigger programs (.exe names)", programs); programGroup.Dock = DockStyle.Fill;
+            body.Controls.Add(programGroup, 0, 0);
+            main.Controls.Add(body);
 
             TableLayoutPanel profiles = Table(2);
             gameBox = ModeBox(); desktopBox = ModeBox();
@@ -101,7 +105,8 @@ namespace VRMogger
             profiles.Controls.Add(steamOnly, 0, profiles.RowCount++); profiles.SetColumnSpan(steamOnly, 2);
             captured.CheckedChanged += delegate { desktopBox.Enabled = !captured.Checked; };
             desktopBox.Enabled = !captured.Checked;
-            main.Controls.Add(Group("Display modes", profiles));
+            GroupBox profileGroup = Group("Display modes", profiles); profileGroup.Dock = DockStyle.Fill;
+            body.Controls.Add(profileGroup, 1, 0);
 
             FlowLayoutPanel options = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true };
             autostart = Check("Start with Windows", original.Autostart);
@@ -119,6 +124,16 @@ namespace VRMogger
             AcceptButton = saveButton; CancelButton = cancel;
             monitorBox.SelectedIndexChanged += delegate { if (!updating) LoadModes(); };
             Controls.Add(main);
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            Control content = Controls[0]; content.PerformLayout();
+            Rectangle work = Screen.FromControl(this).WorkingArea;
+            int width = Math.Min(ClientSize.Width, Math.Max(320, work.Width - 64));
+            int height = content.GetPreferredSize(new Size(width, 0)).Height;
+            ClientSize = new Size(width, Math.Min(height, Math.Max(240, work.Height - 100)));
+            CenterToScreen(); base.OnShown(e);
         }
 
         private void AddTrigger(string input)

@@ -42,7 +42,7 @@ namespace VRMogger
 
         public RecoveryRecord LoadRecovery()
         {
-            try { record = recovery.Load(); }
+            try { record = recovery.Load(); recoveryBlocked = false; }
             catch { recoveryBlocked = true; throw; }
             active = false;
             return record;
@@ -142,7 +142,7 @@ namespace VRMogger
             // Do not forget the snapshot if clearing it fails. Retry without switching again.
             try { recovery.Clear(); }
             catch (Exception ex) { error = "Display restored, but recovery data could not be cleared. " + ex.Message; retryAt = now + RetryMilliseconds; Notify(); return false; }
-            record = null; retryAt = now + RetryMilliseconds; Notify();
+            record = null; retryAt = 0; recoveryBlocked = false; Notify();
             return true;
         }
 

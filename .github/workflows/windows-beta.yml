@@ -10,20 +10,20 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install installer build tool
         shell: pwsh
         run: |
           $nsisPath = Join-Path ${env:ProgramFiles(x86)} 'NSIS\makensis.exe'
           if (-not (Test-Path $nsisPath)) {
-            choco install nsis --yes --no-progress
+            choco install nsis --version=3.13.0 --yes --no-progress
             if ($LASTEXITCODE -ne 0) { throw 'NSIS installation failed.' }
           }
       - name: Build, test, and package
         shell: pwsh
         run: .\build.ps1 -Installer
       - name: Upload beta packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: VRMogger-1.1.0-beta.1-Windows
           path: dist/*
@@ -31,7 +31,7 @@ jobs:
           retention-days: 30
       - name: Upload test report and UI preview
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: VRMogger-test-report
           path: |

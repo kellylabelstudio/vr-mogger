@@ -84,6 +84,7 @@ internal static class SessionTests
             f.Controller.Tick(false, f.Settings, 12000); Assert(!f.Controller.HasSession, "Did not restore"); Equal(Desktop, f.Displays.Current["laptop"]);
         });
         Test("Zero restore delay", delegate { Fixture f = new Fixture(); f.Settings.DelaySeconds = 0; f.Enter(); f.Controller.Tick(false, f.Settings, 100); Assert(!f.Controller.HasSession, "Zero delay did not restore"); });
+        Test("A new game can switch immediately after clean restore", delegate { Fixture f = new Fixture(); f.Enter(); f.End(2000); f.Controller.Tick(true, f.Settings, 12001); Assert(f.Controller.IsActive, "A clean restore must not apply the failure retry delay"); });
         Test("Game restarts during delay", delegate {
             Fixture f = new Fixture(); f.Enter(); f.Controller.Tick(false, f.Settings, 2000); f.Controller.Tick(true, f.Settings, 8000);
             f.Controller.Tick(true, f.Settings, 15000); Equal(1, f.Recovery.Saves); Assert(f.Controller.IsActive, "Session should still be active");
@@ -111,6 +112,7 @@ internal static class SessionTests
         Test("Recovery from another instance preserves original", delegate { Fixture f = new Fixture(); f.Enter(); SessionController restarted = new SessionController(f.Displays, f.Recovery); Assert(restarted.LoadRecovery() != null, "Missing crash marker"); string e; Assert(restarted.TryRestore(0, out e), e); Equal(Desktop, f.Displays.Current["laptop"]); });
         Test("Declining recovery keeps current display", delegate { Fixture f = new Fixture(); f.Enter(); SessionController restarted = new SessionController(f.Displays, f.Recovery); restarted.LoadRecovery(); string e; Assert(restarted.DiscardRecovery(out e), e); Equal(Game, f.Displays.Current["laptop"]); Equal(1, f.Displays.Writes.Count); });
         Test("Corrupt recovery blocks changes until discarded", delegate { Fixture f = new Fixture(); f.Recovery.FailLoad = true; try { f.Controller.LoadRecovery(); } catch (IOException) { } f.Controller.Tick(true, f.Settings, 0); Equal(0, f.Displays.Writes.Count); string e; Assert(f.Controller.DiscardRecovery(out e), e); f.Controller.Tick(true, f.Settings, 1); Assert(f.Controller.IsActive, "Did not unblock"); });
+        Test("A repaired recovery file can unblock restoration", delegate { Fixture f = new Fixture(); f.Enter(); SessionController restarted = new SessionController(f.Displays, f.Recovery); f.Recovery.FailLoad = true; try { restarted.LoadRecovery(); } catch (IOException) { } f.Recovery.FailLoad = false; restarted.LoadRecovery(); string e; Assert(restarted.TryRestore(100, out e), e); Assert(!restarted.RecoveryNeedsAttention, "Successful recovery stayed blocked"); Equal(Desktop, f.Displays.Current["laptop"]); });
         Test("Failed recovery discard blocks automatic restoration", delegate { Fixture f = new Fixture(); f.Enter(); SessionController restarted = new SessionController(f.Displays, f.Recovery); restarted.LoadRecovery(); f.Recovery.FailClear = true; string e; Assert(!restarted.DiscardRecovery(out e), "Expected failed discard"); restarted.Tick(false, f.Settings, 40000); Equal(Game, f.Displays.Current["laptop"]); });
         Test("Failed cleanup cannot forget restoration", delegate { Fixture f = new Fixture(); f.Enter(); f.Recovery.FailClear = true; f.End(2000); Assert(f.Controller.HasSession, "Recovery should remain pending"); int writes = f.Displays.Writes.Count; f.Recovery.FailClear = false; f.Controller.Tick(false, f.Settings, 22000); Equal(writes, f.Displays.Writes.Count); Assert(!f.Controller.HasSession, "Cleanup retry failed"); });
         Test("Legacy settings migrate with deduplicated processes", LegacyConfig);
@@ -157,11 +159,12 @@ internal static class SessionTests
         using (SettingsForm form = new SettingsForm(f.Settings, f.Displays, delegate(Settings s) { return null; }, SystemIcons.Application))
         {
             form.Show(); Application.DoEvents();
-            Assert(form.Width >= 600 && form.Height > 400, "Unexpectedly small settings window");
-            CheckControls(form, form);
+            Console.WriteLine("Settings dimensions: " + form.Width + " x " + form.Height + "; client " + form.ClientSize + "; content " + form.Controls[0].Size);
             string output = Environment.GetEnvironmentVariable("VRMOGGER_TEST_OUTPUT") ?? Path.GetDirectoryName(Application.ExecutablePath);
             Directory.CreateDirectory(output);
             using (Bitmap bitmap = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height)); bitmap.Save(Path.Combine(output, "settings-preview.png"), System.Drawing.Imaging.ImageFormat.Png); }
+            Assert(form.Width >= 600 && form.Height > 400, "Unexpectedly small settings window");
+            CheckControls(form, form);
             form.Close();
         }
     }

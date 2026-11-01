@@ -57,6 +57,7 @@ namespace VRMogger
         private ToolStripMenuItem statusItem, enterItem, restoreItem, pauseItem, recoveryItem;
         private bool settingsOpen, closing, ending, setupNeeded;
         private string invalidConfigBackup, lastError;
+        private long lastErrorAt;
 
         public TrayContext(bool minimized)
         {
@@ -222,8 +223,8 @@ namespace VRMogger
         {
             if (string.IsNullOrEmpty(message)) return;
             store.Log(settings, message);
-            if (message == lastError || ending || closing) return;
-            lastError = message;
+            if ((message == lastError && clock.ElapsedMilliseconds - lastErrorAt < 30000) || ending || closing) return;
+            lastError = message; lastErrorAt = clock.ElapsedMilliseconds;
             if (tray != null) tray.ShowBalloonTip(6000, "VR Mogger", message, ToolTipIcon.Warning);
         }
         private void UpdateStatus()
