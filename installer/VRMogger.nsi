@@ -73,7 +73,7 @@ Section "VR Mogger"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "Publisher" "Kelly Label Studio x MK2XX2"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "DisplayIcon" "$INSTDIR\VRMogger.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "InstallLocation" "$INSTDIR"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\VRMogger" "NoRepair" 1
 SectionEnd
@@ -88,8 +88,8 @@ Section "Uninstall"
     SetRegView 64
   ${EndIf}
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "VRMogger"
-  StrCmp $0 '$"$INSTDIR\VRMogger.exe$" --minimized' remove_startup
-  StrCmp $0 '$"$INSTDIR\VRMogger.exe$" /minimized' remove_startup keep_startup
+  StrCmp $0 '"$INSTDIR\VRMogger.exe" --minimized' remove_startup
+  StrCmp $0 '"$INSTDIR\VRMogger.exe" /minimized' remove_startup keep_startup
 remove_startup:
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "VRMogger"
 keep_startup:

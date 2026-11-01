@@ -36,7 +36,7 @@ if ($Installer) {
         if ($null -eq $nsisCommand) { throw 'NSIS is required only to build the installer. Install NSIS, then rerun with -Installer.' }
         $nsisPath = $nsisCommand.Source
     }
-    & $nsisPath /V3 "$projectPath\installer\VRMogger.nsi"
+    & $nsisPath /V3 /WX "$projectPath\installer\VRMogger.nsi"
     if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 }
 Get-ChildItem $packagePath -File | Where-Object { $_.Extension -in '.exe', '.zip' } | Sort-Object Name | ForEach-Object {

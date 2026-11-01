@@ -27,7 +27,10 @@ try {
     if ((Get-FileHash $installedExe).Hash -ne (Get-FileHash (Join-Path $repoPath 'bin\VRMogger.exe')).Hash) { throw 'Installed executable differs from the tested build.' }
     $registered = $base32.OpenSubKey($uninstallKey)
     if ($null -eq $registered) { throw 'Per-user uninstall registration missing.' }
-    try { if ($registered.GetValue('InstallLocation') -ne $installPath) { throw 'InstallLocation does not match the chosen directory.' } }
+    try {
+        if ($registered.GetValue('InstallLocation') -ne $installPath) { throw 'InstallLocation does not match the chosen directory.' }
+        if ($registered.GetValue('UninstallString') -ne ('"' + (Join-Path $installPath 'Uninstall.exe') + '"')) { throw 'The registered uninstall command is not correctly quoted.' }
+    }
     finally { $registered.Dispose() }
     # Use the legacy switch to verify upgrades also remove their own startup entry.
     $startup = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($runKey)
