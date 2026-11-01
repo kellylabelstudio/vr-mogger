@@ -84,11 +84,16 @@ FunctionEnd
 
 Section "Uninstall"
   SetShellVarContext current
+  ${If} ${RunningX64}
+    SetRegView 64
+  ${EndIf}
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "VRMogger"
-  StrCmp $0 '$"$INSTDIR\VRMogger.exe$" --minimized' remove_startup keep_startup
+  StrCmp $0 '$"$INSTDIR\VRMogger.exe$" --minimized' remove_startup
+  StrCmp $0 '$"$INSTDIR\VRMogger.exe$" /minimized' remove_startup keep_startup
 remove_startup:
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "VRMogger"
 keep_startup:
+  SetRegView 32
   Delete "$INSTDIR\VRMogger.exe"
   Delete "$INSTDIR\LICENSE"
   Delete "$INSTDIR\README.md"
